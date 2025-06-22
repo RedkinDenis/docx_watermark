@@ -1,6 +1,6 @@
 from docx import Document
 
-ZERO_WIDTH_SPACE = "\u200D"  # ZWC
+ZERO_WIDTH_SPACE = "\u200D"  # ZWC (в данный момент это ZWJ)
 NORMAL_SPACE = "\u0020"      # Обычный пробел
 
 def encode_zwbsp(doc_path, secret_msg, output_path="secret.docx"):
@@ -74,7 +74,7 @@ def decode_zwbsp(doc_path):
     
     # Собираем биты в байты
     secret_msg = ''
-    for i in range(0, len(binary_secret), 4):  # 2 бита → 1 символ
+    for i in range(0, len(binary_secret), 4): 
         byte = binary_secret[i:i+4]
         if len(byte) < 4:
             break
