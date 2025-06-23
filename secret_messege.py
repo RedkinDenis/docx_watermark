@@ -5,7 +5,7 @@ NORMAL_SPACE = "\u0020"      # Обычный пробел
 
 def encode_zwbsp(doc_path, secret_msg, output_path="secret.docx"):
     doc = Document(doc_path)
-    binary_secret = ''.join(format(ord(char), '08b') for char in secret_msg)
+    binary_secret = ''.join(format(ord(char), '016b') for char in secret_msg)
     
     # Дополняем биты до чётного количества
     if len(binary_secret) % 2 != 0:
@@ -74,9 +74,9 @@ def decode_zwbsp(doc_path):
     
     # Собираем биты в байты
     secret_msg = ''
-    for i in range(0, len(binary_secret), 4): 
-        byte = binary_secret[i:i+4]
-        if len(byte) < 4:
+    for i in range(0, len(binary_secret), 8): 
+        byte = binary_secret[i:i+8]
+        if len(byte) < 8:
             break
         secret_msg += chr(int(''.join(byte), 2))
     
