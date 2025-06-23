@@ -25,25 +25,25 @@ unicode_chars = [
     ("NormalSpace", '\u0020', '0020')
 ]
 
-doc = Document("unicode_chars.docx")
-string = "\n".join(paragraph.text for paragraph in doc.paragraphs) 
-# print(string)
+def test(doc_name):
+    doc = Document(doc_name)
+    string = "\n".join(paragraph.text for paragraph in doc.paragraphs) 
+    binary = ''.join(format(ord(char), '016b') for char in string)
+    bin_chars = [binary[i:i+16] for i in range(0, len(binary), 16)]
 
-binary = ''.join(format(ord(char), '016b') for char in string)
+    k = 1
+    print("Sastainable chars")
+    for U in unicode_chars:
+        isAlive = format(ord(U[1]), '016b') in bin_chars
+        if isAlive:
+            print(f"{k} - [{U[2]}]{U[0]}")
+        k+=1
 
-bin_chars = [binary[i:i+16] for i in range(0, len(binary), 16)]
-
-# print(len(binary) / len(string), len(binary), len(bin_chars))
-
-k = 1
-print("Sastainable chars")
-for U in unicode_chars:
-    isAlive = format(ord(U[1]), '016b') in bin_chars
-    if isAlive:
-        print(f"{k} - [{U[2]}]{U[0]}")
-    k+=1
-
-
+testfiles = ["googledoc", "yandex", "office", "note", "office1"]
+for file in testfiles:
+    print(file)
+    test("sust_test/" + file + ".docx")
+    print()
 
 
 
