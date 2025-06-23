@@ -32,14 +32,14 @@ def test(doc_name):
     bin_chars = [binary[i:i+16] for i in range(0, len(binary), 16)]
 
     k = 1
-    print("Sastainable chars")
+    print("Sustainable chars")
     for U in unicode_chars:
         isAlive = format(ord(U[1]), '016b') in bin_chars
         if isAlive:
             print(f"{k} - [{U[2]}]{U[0]}")
         k+=1
 
-testfiles = ["googledoc", "yandex", "office", "note", "office1"]
+testfiles = ["googledoc", "yandex", "office", "note", "office1", "vk", "gmail", "yandexMail", "libbre"]
 for file in testfiles:
     print(file)
     test("sust_test/" + file + ".docx")
