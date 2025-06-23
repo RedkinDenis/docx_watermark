@@ -1,17 +1,27 @@
 from docx import Document
+from secret_messege import *
 
-ZERO_WIDTH_SPACE = "\u200C"  # ZWC (в данный момент это ZWJ)
-NORMAL_SPACE = "\u0020"      # Обычный пробел
+ZERO_WIDTH_SPACE = "\u200C"  # Zero-width non-joiner (U+200C)
+NORMAL_SPACE = "\u0020"      
 
-def encode_zwbsp(doc_path, secret_msg, output_path="secret.docx"):
+def encode_zwbsp(doc_path, binary_str: str, output_path="secret.docx"):
+    """
+    Прячет бинарную строку (из '0' и '1') в документ Word
+    :param doc_path: Путь к исходному документу
+    :param binary_str: Бинарная строка (например, "01001101")
+    :param output_path: Путь для сохранения
+    """
     doc = Document(doc_path)
-    binary_secret = ''.join(format(ord(char), '016b') for char in secret_msg)
     
-    # Дополняем биты до чётного количества
-    if len(binary_secret) % 2 != 0:
-        binary_secret += '0'
+    # Проверяем, что строка содержит только 0 и 1
+    if not all(c in '01' for c in binary_str):
+        raise ValueError("Binary string should contain only '0' and '1'")
     
-    bit_pairs = [binary_secret[i:i+2] for i in range(0, len(binary_secret), 2)]
+    # Дополняем биты до чётного количества (на случай стороннего использования этой функции)
+    if len(binary_str) % 2 != 0:
+        binary_str += '0'
+    
+    bit_pairs = [binary_str[i:i+2] for i in range(0, len(binary_str), 2)]
     bit_index = 0
 
     for paragraph in doc.paragraphs:
@@ -45,10 +55,15 @@ def encode_zwbsp(doc_path, secret_msg, output_path="secret.docx"):
             run.text = ''.join(new_text)
     
     doc.save(output_path)
-    print(f"Сообщение '{secret_msg}' внедрено в {output_path}")
+    print(f"Бинарное сообщение внедрено в {output_path}")
 
 
-def decode_zwbsp(doc_path):
+def decode_zwbsp(doc_path) -> str:
+    """
+    Извлекает бинарную строку из документа Word
+    :param doc_path: Путь к документу
+    :return: Бинарная строка (из '0' и '1')
+    """
     doc = Document(doc_path)
     binary_secret = []
     
@@ -72,18 +87,17 @@ def decode_zwbsp(doc_path):
                 i += 1
             i += 1
     
-    # Собираем биты в байты
-    secret_msg = ''
-    for i in range(0, len(binary_secret), 8): 
-        byte = binary_secret[i:i+8]
-        if len(byte) < 8:
-            break
-        secret_msg += chr(int(''.join(byte), 2))
-    
-    return secret_msg
+    return ''.join(binary_secret)
 
-messege = ""
-encode_zwbsp("test.docx", "Karl stole corals from Clara", "secret.docx")
-
-secret = decode_zwbsp("secret.docx")
-print(f"Извлеченное раскодированное сообщение: {secret}")
+if __name__ == "__main__":
+    records = [
+            Record(1, b'ab'),  
+            Record(2, b'cd')   
+        ]
+    msg = SecretMessage(records)
+    print(msg)
+    binary_msg = msg.to_binary_str()
+    encode_zwbsp("test.docx", binary_msg, "secret.docx")
+    extracted_binary = decode_zwbsp("secret.docx")
+    extr_msg = msg.from_binary_str(extracted_binary)
+    print(extr_msg)
