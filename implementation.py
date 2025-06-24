@@ -1,14 +1,14 @@
 from docx import Document
-from secret_messege import *
+from secret_messege import SecretMessage, Record
 
-ZERO_WIDTH_SPACE = "\u200C"  # Zero-width non-joiner (U+200C)
+ZERO_WIDTH_NON_JOINER = "\u200C"  # Zero-width non-joiner (U+200C)
 NORMAL_SPACE = "\u0020"      
 
 def encode_zwbsp(doc_path, binary_str: str, output_path="secret.docx"):
     """
-    Прячет бинарную строку (из '0' и '1') в документ Word
+    Прячет бинарную строку в документ Word
     :param doc_path: Путь к исходному документу
-    :param binary_str: Бинарная строка (например, "01001101")
+    :param binary_str: Бинарная строка
     :param output_path: Путь для сохранения
     """
     doc = Document(doc_path)
@@ -40,11 +40,11 @@ def encode_zwbsp(doc_path, binary_str: str, output_path="secret.docx"):
                     if bit_pair == '00':
                         new_space = NORMAL_SPACE
                     elif bit_pair == '01':
-                        new_space = NORMAL_SPACE + ZERO_WIDTH_SPACE
+                        new_space = NORMAL_SPACE + ZERO_WIDTH_NON_JOINER
                     elif bit_pair == '10':
-                        new_space = ZERO_WIDTH_SPACE + NORMAL_SPACE
+                        new_space = ZERO_WIDTH_NON_JOINER + NORMAL_SPACE
                     elif bit_pair == '11':
-                        new_space = ZERO_WIDTH_SPACE + NORMAL_SPACE + ZERO_WIDTH_SPACE
+                        new_space = ZERO_WIDTH_NON_JOINER + NORMAL_SPACE + ZERO_WIDTH_NON_JOINER
                     
                     new_text.append(new_space)
                     bit_index += 1
@@ -61,8 +61,8 @@ def encode_zwbsp(doc_path, binary_str: str, output_path="secret.docx"):
 def decode_zwbsp(doc_path) -> str:
     """
     Извлекает бинарную строку из документа Word
-    :param doc_path: Путь к документу
-    :return: Бинарная строка (из '0' и '1')
+    :param doc_path: Путь к документу 
+    :return: Бинарная строка 
     """
     doc = Document(doc_path)
     binary_secret = []
@@ -76,11 +76,11 @@ def decode_zwbsp(doc_path) -> str:
                 prev_char = text[i-1] if i > 0 else ''
                 next_char = text[i+1] if i < len(text)-1 else ''
                 
-                if prev_char == ZERO_WIDTH_SPACE and next_char == ZERO_WIDTH_SPACE:
+                if prev_char == ZERO_WIDTH_NON_JOINER and next_char == ZERO_WIDTH_NON_JOINER:
                     binary_secret.append('11')
-                elif prev_char == ZERO_WIDTH_SPACE:
+                elif prev_char == ZERO_WIDTH_NON_JOINER:
                     binary_secret.append('10')
-                elif next_char == ZERO_WIDTH_SPACE:
+                elif next_char == ZERO_WIDTH_NON_JOINER:
                     binary_secret.append('01')
                 else:
                     binary_secret.append('00')
@@ -90,14 +90,25 @@ def decode_zwbsp(doc_path) -> str:
     return ''.join(binary_secret)
 
 if __name__ == "__main__":
+
+    import random
+    random_bits = ''.join(random.choices('01', k=15))
     records = [
-            Record(1, b'ab'),  
-            Record(2, b'cd')   
+            Record(1, random_bits),
+            Record(2, random_bits)
         ]
     msg = SecretMessage(records)
+    
+    print("Внедряемое сообщение")
     print(msg)
     binary_msg = msg.to_binary_str()
+    
     encode_zwbsp("test.docx", binary_msg, "secret.docx")
     extracted_binary = decode_zwbsp("secret.docx")
+    
     extr_msg = msg.from_binary_str(extracted_binary)
+    
+    print("Извлечённое сообщение")
     print(extr_msg)
+
+    print(f"Внедрённое == извлечвенное: {msg == extr_msg}")
