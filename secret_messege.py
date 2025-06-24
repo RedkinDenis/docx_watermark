@@ -46,10 +46,11 @@ class Record:
 class SecretMessage:
     HEADER = 0xAA
     TAIL = 0x55
-    MAX_TOTAL_SIZE = 64 + 8*2
+    MAX_TOTAL_SIZE = 64
     
     def __init__(self, records: List[Record]):
         self.records = records
+        self.MAX_TOTAL_SIZE += 16 * len(self.records)
         self._validate_size()
         self.check_summ = self.calculate_checksum()
     
