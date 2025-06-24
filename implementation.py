@@ -1,5 +1,6 @@
 from docx import Document
 from secret_messege import SecretMessage, Record
+from re import*
 
 ZWNJ = "\u200C"  # Zero-width non-joiner (U+200C)
 MSP = "\u018E"
@@ -63,6 +64,18 @@ def decode_zwbsp(doc_path) -> str:
 
     doc = Document(doc_path)
     binary_secret = []
+
+    head = encode_cwm(format(SecretMessage.HEADER, "08b"))
+    tail = encode_cwm(format(SecretMessage.TAIL, "08b"))
+    print(head)
+    print(tail)
+
+    for paragraph in doc.paragraphs:
+        text = paragraph.text
+        pattern = rf"{head}(.*?){tail}"
+        matches = findall(pattern, text, DOTALL)
+    print(matches)
+
     
     # с помощью форматной строки извлечь все цвз и посчитать сколько их
 
@@ -84,13 +97,13 @@ if __name__ == "__main__":
     encode_zwbsp("test_dataset/33.docx", binary_msg, "secret.docx")
     
     # encode_zwbsp("test.docx", binary_msg, "secret.docx")
-    extracted_binary = decode_zwbsp("secret.docx")
-    print(len(extracted_binary))
+    decode_zwbsp("secret.docx")
+    # print(len(extracted_binary))
     
-    print(extracted_binary)
-    extr_msg = msg.from_binary_str(extracted_binary)
+    # print(extracted_binary)
+    # extr_msg = msg.from_binary_str(extracted_binary)
     
-    print("Извлечённое сообщение")
-    print(extr_msg)
+    # print("Извлечённое сообщение")
+    # print(extr_msg)
 
-    print(f"Внедрённое == извлечвенное: {msg == extr_msg}")
+    # print(f"Внедрённое == извлечвенное: {msg == extr_msg}")
